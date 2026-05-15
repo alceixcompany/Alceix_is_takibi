@@ -1,0 +1,44 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Stabil calisma kurali: panel verileri sadece giris yapan kullanicilara acik.
+    // Not: Bu kural public degildir; Firebase Authentication olmadan veri okunamaz/yazilamaz.
+    // Sistem tamamen oturduktan sonra rol bazli daha siki kurallara geri donulebilir.
+
+    match /users/{userId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn();
+      allow delete: if signedIn();
+    }
+
+    match /firms/{firmId} {
+      allow read: if signedIn();
+      allow create, update, delete: if signedIn();
+    }
+
+    match /activities/{activityId} {
+      allow read: if signedIn();
+      allow create, update, delete: if signedIn();
+    }
+
+    match /sales/{saleId} {
+      allow read: if signedIn();
+      allow create, update, delete: if signedIn();
+    }
+
+    match /production_tasks/{taskId} {
+      allow read: if signedIn();
+      allow create, update, delete: if signedIn();
+    }
+
+    match /messages/{messageId} {
+      allow read: if signedIn();
+      allow create, update, delete: if signedIn();
+    }
+  }
+}

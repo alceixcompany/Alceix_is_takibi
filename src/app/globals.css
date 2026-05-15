@@ -1,0 +1,193 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f4f7f1;
+  --foreground: #14261b;
+  --card: #ffffff;
+  --card-foreground: #14261b;
+  --muted: #e8efe7;
+  --muted-foreground: #617065;
+  --border: #d5ddd2;
+  --primary: #164e3a;
+  --primary-foreground: #f4fff8;
+  --secondary: #dce9dd;
+  --secondary-foreground: #164e3a;
+  --accent: #dff1e5;
+  --accent-foreground: #164e3a;
+  --destructive: #c2410c;
+  --destructive-foreground: #fff7ed;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --font-sans:
+    "Avenir Next", "Manrope", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono:
+    "JetBrains Mono", "SFMono-Regular", "SF Mono", Menlo, Consolas, "Liberation Mono",
+    monospace;
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background:
+    radial-gradient(circle at top left, rgba(22, 78, 58, 0.12), transparent 30%),
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.1), transparent 25%),
+    linear-gradient(180deg, #f6faf5 0%, #f0f5ef 100%);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: rgba(22, 78, 58, 0.18);
+  color: var(--foreground);
+}
+
+
+/* Responsive overflow guardrails */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+*,
+*::before,
+*::after {
+  min-width: 0;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+a,
+td,
+th {
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+button,
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
+.table-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Alceix mobile/layout refinements */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-scroll {
+  border: 1px solid rgba(213, 221, 210, 0.75);
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.table-scroll table {
+  table-layout: auto;
+}
+
+@media (max-width: 768px) {
+  .table-scroll {
+    margin-left: -0.25rem;
+    margin-right: -0.25rem;
+    padding-bottom: 0.25rem;
+  }
+
+  .table-scroll::after {
+    content: "← yana kaydır →";
+    display: block;
+    padding: 0.55rem 0.75rem 0.65rem;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+  }
+}
+
+input,
+select,
+textarea {
+  min-width: 0;
+}
+
+/* Horizontal segment/tab bars: prevents Turkish labels from breaking vertically on mobile */
+.segment-scroll {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.5rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scroll-snap-type: x proximity;
+}
+
+.segment-scroll > * {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+.segment-card {
+  width: 12.5rem;
+  min-height: 7rem;
+  overflow: hidden;
+}
+
+.segment-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.segment-description {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .segment-card {
+    width: 10.75rem;
+    min-height: 5.75rem;
+    padding: 0.85rem !important;
+  }
+
+  .segment-description {
+    display: none;
+  }
+}
