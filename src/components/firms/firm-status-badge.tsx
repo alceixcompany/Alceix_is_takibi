@@ -1,10 +1,9 @@
 import { Badge } from "@/components/ui/badge";
-import { FIRM_STATUS_META } from "@/lib/constants";
-import type { FirmStatus } from "@/lib/types";
+import { getFirmStatusMeta } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-export function FirmStatusBadge({ status }: { status: FirmStatus }) {
-  const meta = FIRM_STATUS_META[status];
+export function FirmStatusBadge({ status }: { status: string }) {
+  const meta = getFirmStatusMeta(status);
 
   return <Badge className={cn("border", meta.className)}>{meta.label}</Badge>;
 }

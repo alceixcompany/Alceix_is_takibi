@@ -114,6 +114,53 @@ export const FIRM_STATUS_OPTIONS = Object.entries(FIRM_STATUS_META).map(
   }),
 );
 
+const LEGACY_FIRM_STATUS_MAP: Record<string, FirmStatus> = {
+  telefon_dogrula: "aranacak",
+};
+
+function toStatusLookupKey(value: string) {
+  return value
+    .trim()
+    .toLocaleLowerCase("tr-TR")
+    .replaceAll("ı", "i")
+    .replaceAll("ğ", "g")
+    .replaceAll("ü", "u")
+    .replaceAll("ş", "s")
+    .replaceAll("ö", "o")
+    .replaceAll("ç", "c")
+    .replace(/[\s-]+/g, "_");
+}
+
+export function normalizeFirmStatus(value: unknown, fallback: FirmStatus = "yeni"): FirmStatus {
+  if (typeof value !== "string" || !value.trim()) {
+    return fallback;
+  }
+
+  if (value in FIRM_STATUS_META) {
+    return value as FirmStatus;
+  }
+
+  return LEGACY_FIRM_STATUS_MAP[toStatusLookupKey(value)] ?? fallback;
+}
+
+export function getFirmStatusMeta(status: string | null | undefined) {
+  if (!status) {
+    return {
+      label: FIRM_STATUS_META.yeni.label,
+      className: FIRM_STATUS_META.yeni.className,
+    };
+  }
+
+  if (status in FIRM_STATUS_META) {
+    return FIRM_STATUS_META[status as FirmStatus];
+  }
+
+  return {
+    label: status,
+    className: "bg-slate-100 text-slate-700 border-slate-200",
+  };
+}
+
 export const PRODUCT_OPTIONS: Array<{
   value: ProductType;
   label: string;

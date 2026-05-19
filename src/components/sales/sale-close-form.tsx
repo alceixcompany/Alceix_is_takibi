@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 
 import { FormMessage } from "@/components/ui/form-message";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Select } from "@/components/ui/select";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { closeSaleAction } from "@/lib/actions/sales";
@@ -25,19 +26,26 @@ export function SaleCloseForm({
   const [state, action] = useActionState(closeSaleAction, {});
   const [product, setProduct] = useState(PRODUCT_OPTIONS[0]?.value ?? "website");
   const [amount, setAmount] = useState(String(PRODUCT_OPTIONS[0]?.price ?? 3000));
-
+  const firmOptions = useMemo(
+    () =>
+      firms.map((firm) => ({
+        value: firm.id,
+        label: firm.company_name,
+        keywords: [firm.city ?? "", firm.phone ?? "", firm.website ?? "", firm.instagram ?? ""],
+      })),
+    [firms],
+  );
   return (
     <form action={action} className="grid gap-5 lg:grid-cols-2">
-      <div className="space-y-2">
-        <Label htmlFor="firm_id">Firma</Label>
-        <Select id="firm_id" name="firm_id" defaultValue={firms[0]?.id}>
-          {firms.map((firm) => (
-            <option key={firm.id} value={firm.id}>
-              {firm.company_name}
-            </option>
-          ))}
-        </Select>
-      </div>
+      <SearchableSelect
+        id="firm_id"
+        name="firm_id"
+        label="Firma"
+        options={firmOptions}
+        defaultValue={firms[0]?.id}
+        placeholder="Firma, şehir, telefon ara"
+        emptyMessage="Aramaya uygun firma bulunamadı."
+      />
 
       {isAdmin ? (
         <div className="space-y-2">

@@ -43,7 +43,7 @@ function qs(input: Record<string, string | undefined>) {
 export default async function FirmsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string; segment?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; segment?: string; page?: string }>;
 }) {
   const user = await requireUser();
 
@@ -59,6 +59,17 @@ export default async function FirmsPage({
   });
   const firms = applySegment(statusFiltered, params.segment);
   const activeSegment = params.segment ?? "all";
+  const pageSize = 25;
+  const totalFirms = firms.length;
+  const totalPages = Math.max(1, Math.ceil(totalFirms / pageSize));
+  const currentPage = Math.min(
+    totalPages,
+    Math.max(1, Number.parseInt(params.page ?? "1", 10) || 1),
+  );
+  const paginatedFirms = firms.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1).filter(
+    (page) => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1,
+  );
 
   return (
     <div className="space-y-6">
@@ -134,12 +145,81 @@ export default async function FirmsPage({
         <CardHeader>
           <CardTitle>Liste</CardTitle>
           <CardDescription>
-            {firms.length} kayıt gösteriliyor. Teslim edilenler ve ödeme bekleyenler artık kendi penceresinde kalır.
+            Toplam {totalFirms} kayıt bulundu. Sayfa başına {pageSize} kayıt gösteriliyor.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {firms.length ? (
-            <FirmTable firms={firms} users={dataset.users} canManage={hasRole(user, "admin")} />
+          {paginatedFirms.length ? (
+            <div className="space-y-4">
+              <FirmTable firms={paginatedFirms} users={dataset.users} canManage={hasRole(user, "admin")} />
+              {totalPages > 1 ? (
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-sm text-muted-foreground">
+                    {Math.min((currentPage - 1) * pageSize + 1, totalFirms)} - {Math.min(currentPage * pageSize, totalFirms)} / {totalFirms}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {currentPage > 1 ? (
+                      <Button asChild variant="outline" size="sm">
+                        <Link
+                          href={`/firms${qs({
+                            segment: params.segment,
+                            q: params.q,
+                            status: params.status,
+                            page: String(currentPage - 1),
+                          })}`}
+                        >
+                          Önceki
+                        </Link>
+                      </Button>
+                    ) : (
+                      <Button variant="outline" size="sm" disabled>
+                        Önceki
+                      </Button>
+                    )}
+                    {pageNumbers.map((page, index) => {
+                      const previousPage = pageNumbers[index - 1];
+                      const showGap = previousPage && page - previousPage > 1;
+
+                      return (
+                        <span key={page} className="flex items-center gap-2">
+                          {showGap ? <span className="px-1 text-sm text-muted-foreground">...</span> : null}
+                          <Button asChild variant={page === currentPage ? "default" : "outline"} size="sm">
+                            <Link
+                              href={`/firms${qs({
+                                segment: params.segment,
+                                q: params.q,
+                                status: params.status,
+                                page: page > 1 ? String(page) : undefined,
+                              })}`}
+                            >
+                              {page}
+                            </Link>
+                          </Button>
+                        </span>
+                      );
+                    })}
+                    {currentPage < totalPages ? (
+                      <Button asChild variant="outline" size="sm">
+                        <Link
+                          href={`/firms${qs({
+                            segment: params.segment,
+                            q: params.q,
+                            status: params.status,
+                            page: String(currentPage + 1),
+                          })}`}
+                        >
+                          Sonraki
+                        </Link>
+                      </Button>
+                    ) : (
+                      <Button variant="outline" size="sm" disabled>
+                        Sonraki
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ) : null}
+            </div>
           ) : (
             <EmptyState title="Firma bulunamadı" description="Bu pencerede veya filtreye uygun kayıt yok." />
           )}

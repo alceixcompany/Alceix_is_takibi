@@ -1,5 +1,5 @@
 import { demoActivities, demoFirms, demoProductionTasks, demoSales, demoUsers } from "@/lib/demo-data";
-import { PRODUCTION_ROLES } from "@/lib/constants";
+import { normalizeFirmStatus, PRODUCTION_ROLES } from "@/lib/constants";
 import { cookies } from "next/headers";
 
 import { FIREBASE_SESSION_COOKIE } from "@/lib/constants";
@@ -47,6 +47,8 @@ export function mapUser(record: Record<string, unknown>, id?: string): AppUser {
 }
 
 export function mapFirm(record: Record<string, unknown>, id?: string): Firm {
+  const assignedTo = typeof record.assigned_to === "string" ? record.assigned_to : null;
+
   return {
     id: String(record.id ?? id ?? ""),
     company_name: String(record.company_name ?? record.companyName ?? ""),
@@ -58,8 +60,8 @@ export function mapFirm(record: Record<string, unknown>, id?: string): Firm {
     website: typeof record.website === "string" ? record.website : null,
     has_website: Boolean(record.has_website ?? record.hasWebsite ?? false),
     source: typeof record.source === "string" ? record.source : null,
-    assigned_to: typeof record.assigned_to === "string" ? record.assigned_to : null,
-    status: String(record.status ?? "yeni") as Firm["status"],
+    assigned_to: assignedTo,
+    status: normalizeFirmStatus(record.status, assignedTo ? "atanmis" : "yeni"),
     last_called_at: record.last_called_at ? toIso(record.last_called_at) : null,
     next_follow_up_at: record.next_follow_up_at ? toIso(record.next_follow_up_at) : null,
     note: typeof record.note === "string" ? record.note : null,

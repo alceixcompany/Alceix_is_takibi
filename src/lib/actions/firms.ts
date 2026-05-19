@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { hasRole, requireAdmin, requireUser } from "@/lib/auth";
+import { normalizeFirmStatus } from "@/lib/constants";
 import { demoModeEnabled } from "@/lib/env";
 import { createActivity, deleteDocument, getFirmById, newId, setDocument, toNullable, updateFirm } from "@/lib/firebase/crm";
 import type { ActionState, FirmStatus } from "@/lib/types";
@@ -130,7 +131,7 @@ export async function createFirmAction(
 
   const id = newId("firms");
   const now = new Date().toISOString();
-  const status = (parsed.data.status || (parsed.data.assigned_to ? "atanmis" : "yeni")) as FirmStatus;
+  const status = normalizeFirmStatus(parsed.data.status, parsed.data.assigned_to ? "atanmis" : "yeni");
   await setDocument("firms", id, {
     id,
     company_name: parsed.data.company_name.trim(),
@@ -184,7 +185,7 @@ export async function editFirmAction(
     has_website: parsed.data.has_website === "on",
     source: toNullable(parsed.data.source),
     assigned_to: toNullable(parsed.data.assigned_to),
-    status: (parsed.data.status || firm.status) as FirmStatus,
+    status: normalizeFirmStatus(parsed.data.status, firm.status),
     note: toNullable(parsed.data.note),
     next_follow_up_at: toNullable(parsed.data.next_follow_up_at),
   });
@@ -242,7 +243,7 @@ export async function updateFirmStatusAction(
   if (!canManage) return { error: "Bu firmayı güncelleme yetkiniz yok." };
 
   await updateFirm(parsed.data.firm_id, {
-    status: parsed.data.status as FirmStatus,
+    status: normalizeFirmStatus(parsed.data.status, firm.status),
     note: toNullable(parsed.data.note),
     next_follow_up_at: toNullable(parsed.data.next_follow_up_at),
     last_called_at: new Date().toISOString(),
@@ -407,7 +408,7 @@ export async function importFirmsAction(
       has_website: Boolean(row.has_website),
       source: typeof row.source === "string" ? toNullable(row.source) : "csv-import",
       assigned_to: assignedTo,
-      status: typeof row.status === "string" && row.status ? row.status : assignedTo ? "atanmis" : "yeni",
+      status: normalizeFirmStatus(row.status, assignedTo ? "atanmis" : "yeni"),
       note: typeof row.note === "string" ? toNullable(row.note) : null,
       next_follow_up_at: typeof row.next_follow_up_at === "string" ? toNullable(row.next_follow_up_at) : null,
       last_called_at: null,

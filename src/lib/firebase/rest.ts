@@ -63,8 +63,24 @@ export async function getRestDocument(collection: string, id: string, idToken: s
 }
 
 export async function getRestCollection(collection: string, idToken: string) {
-  const data = await firestoreFetch(collection, idToken) as { documents?: FirestoreDocument[] };
-  return (data.documents ?? []).map(mapFirestoreDocument);
+  const documents: FirestoreDocument[] = [];
+  let nextPageToken: string | undefined;
+
+  do {
+    const query = new URLSearchParams({ pageSize: "1000" });
+    if (nextPageToken) {
+      query.set("pageToken", nextPageToken);
+    }
+
+    const data = await firestoreFetch(`${collection}?${query.toString()}`, idToken) as {
+      documents?: FirestoreDocument[];
+      nextPageToken?: string;
+    };
+    documents.push(...(data.documents ?? []));
+    nextPageToken = data.nextPageToken;
+  } while (nextPageToken);
+
+  return documents.map(mapFirestoreDocument);
 }
 
 export function toFirestoreValue(value: unknown): FirestoreValue {
